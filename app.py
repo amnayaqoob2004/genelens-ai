@@ -5,6 +5,7 @@ from services.ncbi import (
     search_gene, get_gene_info,
     search_nucleotide, get_nucleotide_record,
     search_protein, get_protein_record,
+    search_pubmed, get_pubmed_articles,
 )
 from bioinformatics.sequence_analysis import analyze_sequence
 
@@ -127,3 +128,25 @@ if search_clicked:
 
                         with st.expander("View full protein sequence"):
                             st.code(protein_record["sequence"], language=None)
+
+                # ---- PubMed ----
+                st.divider()
+                st.subheader("📚 Related Research (PubMed)")
+
+                with st.spinner("Searching PubMed..."):
+                    pmids = search_pubmed(gene_symbol, max_results=5)
+
+                if not pmids:
+                    st.warning("No PubMed articles found for this gene.")
+                else:
+                    articles = get_pubmed_articles(pmids)
+
+                    if not articles:
+                        st.warning("Articles were found, but details could not be retrieved.")
+                    else:
+                        for article in articles:
+                            with st.container(border=True):
+                                st.markdown(f"**{article['title']}**")
+                                st.caption(f"{article['authors']} · {article['year']} · PMID: {article['pmid']}")
+                                st.write(article["abstract"][:400] + ("..." if len(article["abstract"]) > 400 else ""))
+                                st.markdown(f"[View on PubMed](https://pubmed.ncbi.nlm.nih.gov/{article['pmid']}/)")
