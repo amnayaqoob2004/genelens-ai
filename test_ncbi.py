@@ -1,4 +1,5 @@
 from services.ncbi import search_gene, get_gene_info, search_nucleotide, get_nucleotide_record
+from bioinformatics.sequence_analysis import analyze_sequence
 
 gene_id = search_gene("BRCA1")
 print("Gene ID for BRCA1:", gene_id)
@@ -15,4 +16,6 @@ if nucleotide_id:
     print("Accession:", nuc_record["accession"])
     print("Organism:", nuc_record["organism"])
     print("Length:", nuc_record["length"])
-    print("First 100 bases of sequence:", nuc_record["sequence"][:100])
+
+    analysis = analyze_sequence(nuc_record["sequence"])
+    print("Sequence Analysis:", analysis)
