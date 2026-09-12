@@ -110,3 +110,53 @@ def get_nucleotide_record(nucleotide_id):
     except Exception as e:
         print(f"Error fetching nucleotide record: {e}")
         return None
+
+
+def search_protein(gene_symbol, organism="Homo sapiens"):
+    """
+    Search NCBI Protein database for a gene symbol.
+    Returns a protein record ID (string), or None if not found.
+    """
+    query = f"{gene_symbol}[Gene Name] AND {organism}[Organism] AND refseq[filter]"
+
+    try:
+        handle = Entrez.esearch(db="protein", term=query, retmax=1, sort="relevance")
+        record = Entrez.read(handle)
+        handle.close()
+
+        id_list = record.get("IdList", [])
+        if not id_list:
+            return None
+
+        return id_list[0]
+
+    except Exception as e:
+        print(f"Error searching NCBI Protein: {e}")
+        return None
+
+
+def get_protein_record(protein_id):
+    """
+    Fetch a protein record's details using its ID.
+    Returns a dictionary with name, accession, organism, length,
+    description, and sequence, or None if not found.
+    """
+    try:
+        handle = Entrez.efetch(db="protein", id=protein_id, rettype="gb", retmode="text")
+        record = SeqIO.read(handle, "genbank")
+        handle.close()
+
+        protein_info = {
+            "name": record.description,
+            "accession": record.id,
+            "organism": record.annotations.get("organism", "Not available"),
+            "length": len(record.seq),
+            "description": record.description,
+            "sequence": str(record.seq),
+        }
+
+        return protein_info
+
+    except Exception as e:
+        print(f"Error fetching protein record: {e}")
+        return None

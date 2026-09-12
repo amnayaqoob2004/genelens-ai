@@ -1,4 +1,8 @@
-from services.ncbi import search_gene, get_gene_info, search_nucleotide, get_nucleotide_record
+from services.ncbi import (
+    search_gene, get_gene_info,
+    search_nucleotide, get_nucleotide_record,
+    search_protein, get_protein_record,
+)
 from bioinformatics.sequence_analysis import analyze_sequence
 
 gene_id = search_gene("BRCA1")
@@ -19,3 +23,14 @@ if nucleotide_id:
 
     analysis = analyze_sequence(nuc_record["sequence"])
     print("Sequence Analysis:", analysis)
+
+protein_id = search_protein("BRCA1")
+print("Protein ID for BRCA1:", protein_id)
+
+if protein_id:
+    protein_record = get_protein_record(protein_id)
+    print("Protein Name:", protein_record["name"])
+    print("Protein Accession:", protein_record["accession"])
+    print("Protein Organism:", protein_record["organism"])
+    print("Protein Length:", protein_record["length"])
+    print("First 50 amino acids:", protein_record["sequence"][:50])
