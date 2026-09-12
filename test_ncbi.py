@@ -1,36 +1,14 @@
-from services.ncbi import (
-    search_gene, get_gene_info,
-    search_nucleotide, get_nucleotide_record,
-    search_protein, get_protein_record,
-)
-from bioinformatics.sequence_analysis import analyze_sequence
 
-gene_id = search_gene("BRCA1")
-print("Gene ID for BRCA1:", gene_id)
+from services.ncbi import search_pubmed, get_pubmed_articles
 
-if gene_id:
-    info = get_gene_info(gene_id)
-    print("Gene Info:", info)
+pmids = search_pubmed("BRCA1", max_results=3)
+print("PMIDs found:", pmids)
 
-nucleotide_id = search_nucleotide("BRCA1")
-print("Nucleotide ID for BRCA1:", nucleotide_id)
-
-if nucleotide_id:
-    nuc_record = get_nucleotide_record(nucleotide_id)
-    print("Accession:", nuc_record["accession"])
-    print("Organism:", nuc_record["organism"])
-    print("Length:", nuc_record["length"])
-
-    analysis = analyze_sequence(nuc_record["sequence"])
-    print("Sequence Analysis:", analysis)
-
-protein_id = search_protein("BRCA1")
-print("Protein ID for BRCA1:", protein_id)
-
-if protein_id:
-    protein_record = get_protein_record(protein_id)
-    print("Protein Name:", protein_record["name"])
-    print("Protein Accession:", protein_record["accession"])
-    print("Protein Organism:", protein_record["organism"])
-    print("Protein Length:", protein_record["length"])
-    print("First 50 amino acids:", protein_record["sequence"][:50])
+articles = get_pubmed_articles(pmids)
+for article in articles:
+    print("\n---")
+    print("Title:", article["title"])
+    print("Authors:", article["authors"])
+    print("Year:", article["year"])
+    print("PMID:", article["pmid"])
+    print("Abstract snippet:", article["abstract"][:150])

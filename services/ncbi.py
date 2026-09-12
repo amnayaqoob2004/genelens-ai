@@ -160,3 +160,81 @@ def get_protein_record(protein_id):
     except Exception as e:
         print(f"Error fetching protein record: {e}")
         return None
+
+
+def search_pubmed(gene_symbol, max_results=5):
+    """
+    Search PubMed for papers related to a gene symbol.
+    Returns a list of PMIDs (strings), or an empty list if none found.
+    """
+    query = f"{gene_symbol}[Gene Name]"
+
+    try:
+        handle = Entrez.esearch(db="pubmed", term=query, retmax=max_results, sort="relevance")
+        record = Entrez.read(handle)
+        handle.close()
+
+        return record.get("IdList", [])
+
+    except Exception as e:
+        print(f"Error searching PubMed: {e}")
+        return []
+
+
+def get_pubmed_articles(pmid_list):
+    """
+    Fetch details for a list of PubMed IDs.
+    Returns a list of dictionaries with title, authors, publication date,
+    PMID, and abstract snippet. Skips articles that fail to parse.
+    """
+    if not pmid_list:
+        return []
+
+    articles = []
+
+    try:
+        handle = Entrez.efetch(db="pubmed", id=pmid_list, rettype="abstract", retmode="xml")
+        records = Entrez.read(handle)
+        handle.close()
+
+        for paper in records.get("PubmedArticle", []):
+            try:
+                medline = paper["MedlineCitation"]
+                article = medline["Article"]
+
+                title = article.get("ArticleTitle", "Title not available")
+
+                author_list = article.get("AuthorList", [])
+                authors = []
+                for author in author_list:
+                    last_name = author.get("LastName", "")
+                    initials = author.get("Initials", "")
+                    if last_name:
+                        authors.append(f"{last_name} {initials}".strip())
+                authors_str = ", ".join(authors) if authors else "Authors not available"
+
+                pub_date_info = article.get("Journal", {}).get("JournalIssue", {}).get("PubDate", {})
+                year = pub_date_info.get("Year", "Date not available")
+
+                pmid = str(medline["PMID"])
+
+                abstract_sections = article.get("Abstract", {}).get("AbstractText", [])
+                abstract = " ".join(str(section) for section in abstract_sections) if abstract_sections else "Abstract not available"
+
+                articles.append({
+                    "title": str(title),
+                    "authors": authors_str,
+                    "year": year,
+                    "pmid": pmid,
+                    "abstract": abstract,
+                })
+
+            except Exception as e:
+                print(f"Skipping one article due to parsing error: {e}")
+                continue
+
+        return articles
+
+    except Exception as e:
+        print(f"Error fetching PubMed articles: {e}")
+        return []
