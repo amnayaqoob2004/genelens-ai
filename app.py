@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from services.ncbi import search_gene, get_gene_info, search_nucleotide, get_nucleotide_record
+from services.ncbi import (
+    search_gene, get_gene_info,
+    search_nucleotide, get_nucleotide_record,
+    search_protein, get_protein_record,
+)
 from bioinformatics.sequence_analysis import analyze_sequence
 
 st.set_page_config(page_title="GeneLens AI", layout="wide")
@@ -89,10 +93,37 @@ if search_clicked:
                             if analysis["ambiguous_count"] > 0:
                                 st.caption(f"Note: {analysis['ambiguous_count']} ambiguous base(s) (e.g. 'N') were excluded from percentage calculations.")
 
-                            # Bar chart of base composition
                             chart_data = pd.DataFrame({
                                 "Base": ["A", "T", "G", "C"],
                                 "Count": [analysis["a_count"], analysis["t_count"], analysis["g_count"], analysis["c_count"]],
                             })
                             fig = px.bar(chart_data, x="Base", y="Count", title="Base Composition", color="Base")
                             st.plotly_chart(fig, use_container_width=True)
+
+                # ---- Protein ----
+                st.divider()
+                st.subheader("🧪 Protein Record")
+
+                with st.spinner("Fetching protein record..."):
+                    protein_id = search_protein(gene_symbol)
+
+                if protein_id is None:
+                    st.warning("No protein record found for this gene.")
+                else:
+                    protein_record = get_protein_record(protein_id)
+
+                    if protein_record is None:
+                        st.warning("Protein record found, but details could not be retrieved.")
+                    else:
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Accession", protein_record["accession"])
+                        with col2:
+                            st.metric("Organism", protein_record["organism"])
+                        with col3:
+                            st.metric("Length", f"{protein_record['length']:,} aa")
+
+                        st.write("**Description:**", protein_record["description"])
+
+                        with st.expander("View full protein sequence"):
+                            st.code(protein_record["sequence"], language=None)
