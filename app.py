@@ -9,7 +9,7 @@ from services.ncbi import (
 )
 from bioinformatics.sequence_analysis import analyze_sequence
 from evidence.builder import build_evidence
-from services.ai import generate_research_brief
+from services.ai import generate_research_brief, ask_genelens
 
 st.set_page_config(page_title="GeneLens AI", layout="wide")
 
@@ -179,3 +179,24 @@ if gene_symbol:
 
         if "brief" in st.session_state and st.session_state.get("evidence", {}).get("query") == gene_symbol:
             st.markdown(st.session_state["brief"])
+
+        # ---- Ask GeneLens ----
+        st.divider()
+        st.subheader("💬 Ask GeneLens")
+        st.write("Ask a specific question about this gene, based only on the retrieved evidence above.")
+
+        user_question = st.text_input("Your question:", key="user_question")
+        ask_clicked = st.button("Ask")
+
+        if ask_clicked:
+            if not user_question.strip():
+                st.warning("Please type a question first.")
+            else:
+                with st.spinner("Thinking..."):
+                    answer = ask_genelens(st.session_state["evidence"], user_question)
+                st.session_state["last_answer"] = answer
+                st.session_state["last_question"] = user_question
+
+        if "last_answer" in st.session_state and st.session_state.get("evidence", {}).get("query") == gene_symbol:
+            st.markdown(f"**Q: {st.session_state['last_question']}**")
+            st.markdown(st.session_state["last_answer"])

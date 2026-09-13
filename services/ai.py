@@ -84,3 +84,39 @@ Write the research brief following the rules and section structure you were give
 
     except Exception as e:
         return f"Error generating research brief: {e}"
+
+
+def ask_genelens(evidence, question):
+    """
+    Answer a user's follow-up question using the same evidence-grounded rules
+    as the research brief. Returns the AI's response text, or an error message.
+    """
+    if not os.getenv("GROQ_API_KEY"):
+        return "Error: Groq API key is missing. Please check your .env file."
+
+    evidence_text = json.dumps(evidence, indent=2)
+
+    user_prompt = f"""Here is the retrieved evidence for gene query "{evidence.get('query')}":
+
+{evidence_text}
+
+The user has a follow-up question:
+"{question}"
+
+Answer the question using ONLY the evidence above, following the same rules you were given
+(label statements as [RETRIEVED FACT] or [AI INTERPRETATION], never invent data, and say
+"This information was not found in the retrieved evidence" if the evidence doesn't cover it)."""
+
+    try:
+        response = client.chat.completions.create(
+            model=MODEL_NAME,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.3,
+        )
+        return response.choices[0].message.content
+
+    except Exception as e:
+        return f"Error answering question: {e}"
