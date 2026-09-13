@@ -12,6 +12,19 @@ from evidence.builder import build_evidence
 from services.ai import generate_research_brief, ask_genelens
 
 st.set_page_config(page_title="GeneLens AI", layout="wide")
+with st.sidebar:
+    st.header("🧬 GeneLens AI")
+    st.write("An AI-powered bioinformatics research explorer.")
+
+    st.subheader("Try an example:")
+    example_genes = ["BRCA1", "TP53", "EGFR", "CFTR"]
+    for example in example_genes:
+        if st.button(example, use_container_width=True):
+            st.session_state["active_gene"] = example
+
+    st.divider()
+    st.caption("Data sources: NCBI Gene, Nucleotide, Protein, and PubMed.")
+    st.caption("AI responses are grounded strictly in retrieved evidence and clearly labeled as fact vs. interpretation.")
 
 st.title("🧬 GeneLens AI")
 st.write("An AI-powered bioinformatics research explorer. Enter a gene symbol to begin.")
