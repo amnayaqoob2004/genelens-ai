@@ -68,17 +68,18 @@ streamlit run app.py
 The app will open at `http://localhost:8501`.
 
 ## 📁 Project Structure
+
 genelens-ai/
-├── app.py # Main Streamlit app
+├── app.py
 ├── services/
-│ ├── ncbi.py # NCBI Gene/Nucleotide/Protein/PubMed functions
-│ └── ai.py # Groq AI integration (research brief + Q&A)
+│ ├── ncbi.py
+│ └── ai.py
 ├── bioinformatics/
-│ └── sequence_analysis.py # DNA sequence statistics (GC%, base counts)
+│ └── sequence_analysis.py
 ├── evidence/
-│ └── builder.py # Combines retrieved data into structured evidence
+│ └── builder.py
 ├── requirements.txt
-├── .env.example # Template for required environment variables
+├── .env.example
 └── README.md
 
 ## ⚠️ Disclaimer
